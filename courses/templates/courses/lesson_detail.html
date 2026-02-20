@@ -1,0 +1,516 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lesson.title }} - {{ course.title }} - MOOC Catalog{% endblock %}
+
+{% block content %}
+<style>
+    .lesson-layout {
+        display: flex;
+        gap: 1rem;
+    }
+
+    /* Hamburger button */
+    .hamburger-btn {
+        display: none;
+        position: fixed;
+        top: 80px;
+        left: 10px;
+        z-index: 1001;
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+
+    .hamburger-btn:hover {
+        background: #0056b3;
+    }
+
+    /* Sidebar */
+    .lesson-sidebar {
+        width: 280px;
+        flex-shrink: 0;
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        height: fit-content;
+        position: sticky;
+        top: 20px;
+    }
+
+    .lesson-sidebar h3 {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #007bff;
+        font-size: 1rem;
+    }
+
+    .lesson-sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .lesson-sidebar li {
+        margin-bottom: 0.5rem;
+    }
+
+    .lesson-sidebar a {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #333;
+        transition: background 0.2s;
+    }
+
+    .lesson-sidebar a:hover {
+        background: #f0f0f0;
+    }
+
+    .lesson-sidebar a.active {
+        background: #007bff;
+        color: white;
+    }
+
+    .lesson-sidebar .lesson-number {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .lesson-sidebar a.active .lesson-number {
+        background: white;
+        color: #007bff;
+    }
+
+    .lesson-sidebar a.viewed .lesson-number {
+        background: #28a745;
+        color: white;
+    }
+
+    .lesson-sidebar a.active.viewed .lesson-number {
+        background: white;
+        color: #28a745;
+    }
+
+    .lesson-sidebar .lesson-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Close button - hidden by default on desktop */
+    .close-sidebar {
+        display: none;
+    }
+
+    /* Main content */
+    .lesson-main {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Lesson header with back button */
+    .lesson-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .lesson-header h1 {
+        margin: 0;
+        flex: 1;
+    }
+
+    .lesson-header .back-btn {
+        flex-shrink: 0;
+        padding: 0.5rem 1rem;
+        background: #6c757d;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        transition: background 0.2s;
+        white-space: nowrap;
+    }
+
+    .lesson-header .back-btn:hover {
+        background: #545b62;
+    }
+
+    .lesson-meta {
+        color: #666;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    /* YouTube embed */
+    .video-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #000;
+    }
+
+    .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    /* Improved lesson content styling */
+    .lesson-content {
+        line-height: 1.8;
+        font-size: 1.05rem;
+        color: #333;
+    }
+
+    .lesson-content p {
+        margin-bottom: 1rem;
+    }
+
+    .lesson-content h2 {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        color: #222;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 0.5rem;
+    }
+
+    .lesson-content h3 {
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        color: #333;
+    }
+
+    .lesson-content ul, .lesson-content ol {
+        margin-bottom: 1rem;
+        padding-left: 1.5rem;
+    }
+
+    .lesson-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .lesson-content pre,
+    .lesson-content code {
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    }
+
+    .lesson-content code {
+        background: #f4f4f4;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-size: 0.9em;
+        color: #d63384;
+    }
+
+    .lesson-content pre {
+        background: #2d2d2d;
+        color: #f8f8f2;
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1.5rem 0;
+        line-height: 1.5;
+    }
+
+    .lesson-content pre code {
+        background: none;
+        padding: 0;
+        color: inherit;
+        font-size: 0.9rem;
+    }
+
+    .lesson-content blockquote {
+        border-left: 4px solid #007bff;
+        padding-left: 1rem;
+        margin: 1.5rem 0;
+        color: #555;
+        font-style: italic;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .lesson-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .lesson-content a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .lesson-content a:hover {
+        text-decoration: underline;
+    }
+
+    .lesson-content hr {
+        border: none;
+        border-top: 2px solid #eee;
+        margin: 2rem 0;
+    }
+
+    /* Navigation buttons */
+    .lesson-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+        gap: 1rem;
+    }
+
+    .lesson-nav > div {
+        flex: 1;
+    }
+
+    .lesson-nav > div:last-child {
+        text-align: right;
+    }
+
+    .lesson-nav .nav-btn {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.75rem 1rem;
+        background: #007bff;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: background 0.2s;
+        max-width: 100%;
+    }
+
+    .lesson-nav > div:last-child .nav-btn {
+        align-items: flex-end;
+    }
+
+    .lesson-nav .nav-btn:hover {
+        background: #0056b3;
+    }
+
+    .lesson-nav .nav-btn .nav-label {
+        font-size: 0.75rem;
+        opacity: 0.85;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .lesson-nav .nav-btn .nav-title {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 250px;
+    }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+    }
+
+    /* Mobile styles */
+    @media (max-width: 768px) {
+        .hamburger-btn {
+            display: block;
+        }
+
+        .lesson-layout {
+            flex-direction: column;
+        }
+
+        .lesson-sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            height: 100vh;
+            width: 280px;
+            z-index: 1000;
+            border-radius: 0;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding-top: 60px;
+        }
+
+        .lesson-sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-overlay.open {
+            display: block;
+        }
+
+        .close-sidebar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+            color: #333;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .close-sidebar:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        .lesson-header {
+            flex-direction: column;
+        }
+
+        .lesson-header .back-btn {
+            align-self: flex-start;
+            order: -1;
+            margin-bottom: 0.5rem;
+        }
+
+        .lesson-nav {
+            flex-direction: column;
+        }
+
+        .lesson-nav > div:last-child {
+            text-align: left;
+        }
+
+        .lesson-nav .nav-btn {
+            width: 100%;
+            align-items: flex-start !important;
+        }
+
+        .lesson-nav .nav-btn .nav-title {
+            max-width: 100%;
+        }
+    }
+</style>
+
+<!-- Hamburger button for mobile -->
+<button class="hamburger-btn" onclick="toggleSidebar()">
+    &#9776;
+</button>
+
+<!-- Overlay for mobile -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<div class="breadcrumb">
+    <a href="{% url 'course_list' %}">Courses</a> <span>&raquo;</span>
+    <a href="{% url 'course_detail' course.pk %}">{{ course.title }}</a> <span>&raquo;</span>
+    {{ lesson.title }}
+</div>
+
+<div class="lesson-layout">
+    <!-- Sidebar with lessons -->
+    <aside class="lesson-sidebar">
+        <button class="close-sidebar" onclick="toggleSidebar()">&times;</button>
+        <h3>{{ course.title }}</h3>
+        <ul>
+            {% for l in all_lessons %}
+            <li>
+                <a href="{% url 'lesson_detail' course.pk l.pk %}"
+                   class="{% if l.pk == lesson.pk %}active{% endif %} {% if l.pk in viewed_lessons %}viewed{% endif %}">
+                    <span class="lesson-number">{{ forloop.counter }}</span>
+                    <span class="lesson-title">{{ l.title }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    <!-- Main content -->
+    <div class="lesson-main">
+        <div class="card">
+            <div class="lesson-header">
+                <h1>{{ lesson.title }}</h1>
+                <a href="{% url 'course_detail' course.pk %}" class="back-btn">&larr; Back to Course</a>
+            </div>
+            <p class="lesson-meta">Part of: <strong>{{ course.title }}</strong></p>
+
+            {% if lesson.get_youtube_embed_url %}
+            <div class="video-container">
+                <iframe
+                    src="{{ lesson.get_youtube_embed_url }}"
+                    title="{{ lesson.title }}"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen>
+                </iframe>
+            </div>
+            {% endif %}
+
+            <div class="lesson-content">{{ lesson.content|linebreaks }}</div>
+
+            <div class="lesson-nav">
+                <div>
+                    {% if prev_lesson %}
+                        <a href="{% url 'lesson_detail' course.pk prev_lesson.pk %}" class="nav-btn">
+                            <span class="nav-label">&larr; Previous</span>
+                            <span class="nav-title">{{ prev_lesson.title }}</span>
+                        </a>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if next_lesson %}
+                        <a href="{% url 'lesson_detail' course.pk next_lesson.pk %}" class="nav-btn">
+                            <span class="nav-label">Next &rarr;</span>
+                            <span class="nav-title">{{ next_lesson.title }}</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleSidebar() {
+    document.querySelector('.lesson-sidebar').classList.toggle('open');
+    document.querySelector('.sidebar-overlay').classList.toggle('open');
+}
+</script>
+{% endblock %}

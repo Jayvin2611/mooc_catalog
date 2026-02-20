@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MOOC Catalog{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            font-size: 1.5rem;
+        }
+        header h1 a {
+            color: white;
+            text-decoration: none;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        nav a:hover {
+            background-color: #34495e;
+        }
+        /* User dropdown */
+        .user-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .user-dropdown-btn {
+            color: white;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin-left: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: inherit;
+        }
+        .user-dropdown-btn:hover {
+            background-color: #34495e;
+        }
+        .user-dropdown-btn::after {
+            content: '';
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid white;
+            margin-left: 4px;
+        }
+        .user-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            min-width: 180px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .user-dropdown-menu a {
+            display: block;
+            color: #333;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            margin: 0;
+            border-radius: 0;
+        }
+        .user-dropdown-menu a:hover {
+            background-color: #f5f5f5;
+        }
+        .user-dropdown-menu .dropdown-divider {
+            border-top: 1px solid #eee;
+            margin: 0.25rem 0;
+        }
+        .user-dropdown-menu .user-info {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #eee;
+            color: #666;
+            font-size: 0.875rem;
+        }
+        .user-dropdown-menu .user-info strong {
+            display: block;
+            color: #333;
+            font-size: 1rem;
+        }
+        .user-dropdown:hover .user-dropdown-menu,
+        .user-dropdown-menu:hover {
+            display: block;
+        }
+        .logout-link {
+            color: #dc3545 !important;
+        }
+        .logout-link:hover {
+            background-color: #fff5f5 !important;
+        }
+        main {
+            min-height: calc(100vh - 200px);
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        .card h2 a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        .card h2 a:hover {
+            color: #3498db;
+        }
+        .card p {
+            color: #666;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #219a52;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .errorlist {
+            color: #e74c3c;
+            list-style: none;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+        }
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+        .lesson-list {
+            list-style: none;
+        }
+        .lesson-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .lesson-item:last-child {
+            border-bottom: none;
+        }
+        .lesson-item a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        .lesson-item a:hover {
+            color: #3498db;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-success {
+            background-color: #27ae60;
+            color: white;
+        }
+        .badge-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .enrolled-badge {
+            background-color: #27ae60;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .breadcrumb {
+            padding: 0.75rem 0;
+            margin-bottom: 1rem;
+        }
+        .breadcrumb a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        .breadcrumb span {
+            color: #666;
+        }
+        .lesson-content {
+            white-space: pre-wrap;
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        .lesson-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            {% load static %}
+            <!-- <h1><a href="{% url 'course_list' %}">MOOC App</a></h1> -->
+             <h1>
+                <a href="{% url 'course_list' %}" style="display: flex; align-items: center; text-decoration: none; color: inherit;">
+                    <img src="{% static 'logo.png' %}" alt="MOOC App Logo" style="height: 40px; margin-right: 10px;">
+                    MOOC App
+                </a>
+            </h1>
+            <nav>
+                <a href="{% url 'course_list' %}">Courses</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'my_courses' %}">My Courses</a>
+                    <div class="user-dropdown">
+                        <button class="user-dropdown-btn">
+                            {{ user.username }}
+                        </button>
+                        <div class="user-dropdown-menu">
+                            <div class="user-info">
+                                Signed in as
+                                <strong>{{ user.username }}</strong>
+                            </div>
+                            <a href="{% url 'edit_profile' %}">Edit Profile</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'logout' %}" class="logout-link">Logout</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}">Login</a>
+                    <a href="{% url 'signup' %}">Sign Up</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 MOOC Catalog. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

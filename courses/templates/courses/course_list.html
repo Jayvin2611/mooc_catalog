@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load course_filters %}
+
+{% block title %}Courses - MOOC Catalog{% endblock %}
+
+{% block content %}
+<style>
+    .course-card {
+        position: relative;
+        display: flex;
+        gap: 1.25rem;
+    }
+    .course-thumbnail {
+        width: 200px;
+        height: 130px;
+        flex-shrink: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .course-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #fff;
+    }
+    .course-thumbnail .placeholder-icon {
+        font-size: 3rem;
+        color: rgba(102, 126, 234, 0.7);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .course-content {
+        flex: 1;
+        min-width: 0;
+    }
+    .course-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .course-header h2 {
+        margin: 0;
+        flex: 1;
+        font-size: 1.25rem;
+    }
+    .enrolled-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.35rem 0.75rem;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+    }
+    .enrolled-badge::before {
+        content: '\2713';
+        font-weight: bold;
+    }
+    .course-description {
+        color: #666;
+        margin: 0.5rem 0;
+        font-size: 0.95rem;
+    }
+    .course-instructor {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.75rem 0;
+        font-size: 0.875rem;
+        color: #555;
+    }
+    .instructor-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #e0e0e0;
+    }
+    .instructor-avatar-placeholder {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .course-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #999;
+    }
+    .course-actions {
+        margin-top: 0.75rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+    .course-actions .btn {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+    }
+    .btn-outline-primary {
+        background: white;
+        color: #007bff;
+        border: 1px solid #007bff;
+    }
+    .btn-outline-primary:hover {
+        background: #007bff;
+        color: white;
+    }
+    .progress-text {
+        color: #28a745;
+        font-weight: 500;
+    }
+    @media (max-width: 600px) {
+        .course-card {
+            flex-direction: column;
+        }
+        .course-thumbnail {
+            width: 100%;
+            height: 150px;
+        }
+    }
+</style>
+
+<h1 style="margin-bottom: 1.5rem;">Available Courses</h1>
+
+{% if courses %}
+    {% for course in courses %}
+        <div class="card course-card">
+            <div class="course-thumbnail">
+                {% if course.thumbnail %}
+                    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+                {% else %}
+                    <span class="placeholder-icon">&#128218;</span>
+                {% endif %}
+            </div>
+            <div class="course-content">
+                <div class="course-header">
+                    <h2><a href="{% url 'course_detail' course.pk %}">{{ course.title }}</a></h2>
+                    {% if course.pk in enrolled_courses_data %}
+                        <span class="enrolled-badge">Enrolled</span>
+                    {% endif %}
+                </div>
+                <p class="course-description">{{ course.short_description }}</p>
+                {% if course.instructor %}
+                    <div class="course-instructor">
+                        {% if course.instructor.profile_pic %}
+                            <img src="{{ course.instructor.profile_pic.url }}" alt="{{ course.instructor.name }}" class="instructor-avatar">
+                        {% else %}
+                            <span class="instructor-avatar-placeholder">{{ course.instructor.name|slice:":1" }}</span>
+                        {% endif %}
+                        <span>{{ course.instructor.name }}</span>
+                    </div>
+                {% endif %}
+                <div class="course-meta">
+                    <span>{{ course.lessons.count }} lesson{{ course.lessons.count|pluralize }}</span>
+                    {% if course.pk in enrolled_courses_data %}
+                        {% with data=enrolled_courses_data|get_item:course.pk %}
+                            <span class="progress-text">{{ data.completed }}/{{ data.total }} completed</span>
+                        {% endwith %}
+                    {% endif %}
+                </div>
+                {% if course.pk in enrolled_courses_data %}
+                    <div class="course-actions">
+                        {% with data=enrolled_courses_data|get_item:course.pk %}
+                            {% if data.next_lesson %}
+                                <a href="{% url 'lesson_detail' course.pk data.next_lesson.pk %}" class="btn btn-primary">
+                                    {% if data.completed == 0 %}
+                                        Start Learning
+                                    {% elif data.completed == data.total %}
+                                        Review Course
+                                    {% else %}
+                                        Continue Learning
+                                    {% endif %}
+                                </a>
+                            {% endif %}
+                        {% endwith %}
+                        <a href="{% url 'course_detail' course.pk %}" class="btn btn-outline-primary">View Details</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="card">
+        <p>No courses available yet. Check back soon!</p>
+    </div>
+{% endif %}
+{% endblock %}
