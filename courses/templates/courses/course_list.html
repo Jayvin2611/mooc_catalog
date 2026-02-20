@@ -148,8 +148,8 @@
     {% for course in courses %}
         <div class="card course-card">
             <div class="course-thumbnail">
-                {% if course.thumbnail %}
-                    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+                {% if course.thumbnail_url %}
+                    <img src="{{ course.thumbnail_url }}" alt="{{ course.title }}">
                 {% else %}
                     <span class="placeholder-icon">&#128218;</span>
                 {% endif %}
@@ -164,8 +164,8 @@
                 <p class="course-description">{{ course.short_description }}</p>
                 {% if course.instructor %}
                     <div class="course-instructor">
-                        {% if course.instructor.profile_pic %}
-                            <img src="{{ course.instructor.profile_pic.url }}" alt="{{ course.instructor.name }}" class="instructor-avatar">
+                        {% if course.instructor.profile_pic_url %}
+                            <img src="{{ course.instructor.profile_pic_url }}" alt="{{ course.instructor.name }}" class="instructor-avatar">
                         {% else %}
                             <span class="instructor-avatar-placeholder">{{ course.instructor.name|slice:":1" }}</span>
                         {% endif %}

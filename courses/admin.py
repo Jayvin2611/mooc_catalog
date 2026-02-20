@@ -11,8 +11,8 @@ class InstructorAdmin(admin.ModelAdmin):
     list_filter = ['created_at']
 
     def profile_pic_preview(self, obj):
-        if obj.profile_pic:
-            return format_html('<img src="{}" width="40" height="40" style="border-radius: 50%; object-fit: cover;" />', obj.profile_pic.url)
+        if obj.profile_pic_url:
+            return format_html('<img src="{}" width="40" height="40" style="border-radius: 50%; object-fit: cover;" />', obj.profile_pic_url)
         return "No image"
     profile_pic_preview.short_description = 'Profile'
 
@@ -37,8 +37,8 @@ class CourseAdmin(admin.ModelAdmin):
     inlines = [LessonInline]
 
     def thumbnail_preview(self, obj):
-        if obj.thumbnail:
-            return format_html('<img src="{}" width="60" height="40" style="border-radius: 4px; object-fit: cover;" />', obj.thumbnail.url)
+        if obj.thumbnail_url:
+            return format_html('<img src="{}" width="60" height="40" style="border-radius: 4px; object-fit: cover;" />', obj.thumbnail_url)
         return "No image"
     thumbnail_preview.short_description = 'Thumbnail'
 

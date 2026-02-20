@@ -172,8 +172,8 @@
 <div class="card">
     <div class="course-hero">
         <div class="course-thumbnail-large">
-            {% if course.thumbnail %}
-                <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}">
+            {% if course.thumbnail_url %}
+                <img src="{{ course.thumbnail_url }}" alt="{{ course.title }}">
             {% else %}
                 <span class="placeholder-icon">&#128218;</span>
             {% endif %}
@@ -205,8 +205,8 @@
 
     {% if course.instructor %}
     <div class="instructor-card">
-        {% if course.instructor.profile_pic %}
-            <img src="{{ course.instructor.profile_pic.url }}" alt="{{ course.instructor.name }}" class="instructor-avatar-large">
+        {% if course.instructor.profile_pic_url %}
+            <img src="{{ course.instructor.profile_pic_url }}" alt="{{ course.instructor.name }}" class="instructor-avatar-large">
         {% else %}
             <span class="instructor-avatar-placeholder-large">{{ course.instructor.name|slice:":1" }}</span>
         {% endif %}
@@ -264,8 +264,8 @@
         {% for other in other_courses %}
             <div class="other-course-card">
                 <div class="other-course-thumb">
-                    {% if other.thumbnail %}
-                        <img src="{{ other.thumbnail.url }}" alt="{{ other.title }}">
+                    {% if other.thumbnail_url %}
+                        <img src="{{ other.thumbnail_url }}" alt="{{ other.title }}">
                     {% else %}
                         <span class="placeholder-icon">&#128218;</span>
                     {% endif %}

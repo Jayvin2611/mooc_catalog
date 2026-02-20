@@ -6,7 +6,7 @@ class Instructor(models.Model):
     """Model representing a course instructor."""
     name = models.CharField(max_length=200)
     bio = models.TextField(blank=True, help_text="Short biography of the instructor")
-    profile_pic = models.ImageField(upload_to='instructors/', blank=True, null=True)
+    profile_pic_url = models.URLField(max_length=500, blank=True, null=True, help_text="Public URL for profile picture")
     website = models.URLField(max_length=500, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -17,10 +17,8 @@ class Instructor(models.Model):
         return self.name
 
     def get_profile_pic_url(self):
-        """Return profile pic URL or a default avatar."""
-        if self.profile_pic:
-            return self.profile_pic.url
-        return None
+        """Return profile pic URL or None."""
+        return self.profile_pic_url
 
 
 class Course(models.Model):
@@ -28,7 +26,7 @@ class Course(models.Model):
     title = models.CharField(max_length=200)
     short_description = models.CharField(max_length=500)
     long_description = models.TextField()
-    thumbnail = models.ImageField(upload_to='courses/', blank=True, null=True, help_text="Course thumbnail image")
+    thumbnail_url = models.URLField(max_length=500, blank=True, null=True, help_text="Public URL for course thumbnail image")
     instructor = models.ForeignKey(Instructor, on_delete=models.SET_NULL, null=True, blank=True, related_name='courses')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -41,9 +39,7 @@ class Course(models.Model):
 
     def get_thumbnail_url(self):
         """Return thumbnail URL or None."""
-        if self.thumbnail:
-            return self.thumbnail.url
-        return None
+        return self.thumbnail_url
 
 
 class Lesson(models.Model):

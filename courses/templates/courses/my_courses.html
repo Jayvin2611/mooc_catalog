@@ -194,8 +194,8 @@
     {% for item in courses %}
         <div class="card course-card">
             <div class="course-thumbnail">
-                {% if item.enrollment.course.thumbnail %}
-                    <img src="{{ item.enrollment.course.thumbnail.url }}" alt="{{ item.enrollment.course.title }}">
+                {% if item.enrollment.course.thumbnail_url %}
+                    <img src="{{ item.enrollment.course.thumbnail_url }}" alt="{{ item.enrollment.course.title }}">
                 {% else %}
                     <span class="placeholder-icon">&#128218;</span>
                 {% endif %}
